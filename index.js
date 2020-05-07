@@ -4,7 +4,17 @@ const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode')
 const slugify = require('slugify')
 
-async function generatePDF(params) {
+
+// generatePDF
+// Arguments: 
+// 'qr_description': <String> Description of QR code location
+// 'safe_entry_url': <String> URL that is encoded into the QR code
+
+// Example:
+// 'qr_description': "NTUC Northpoint SE",
+// 'safe_entry_url': "https://temperaturepass.ndi-api.gov.sg/login/PROD-S83CS0191L-NTUC-NORTHPOINT-SE"
+
+async function generatePDF(qr_description, safe_entry_url) {
   console.log("starting script")
   try {
     // Create a document
@@ -13,10 +23,9 @@ async function generatePDF(params) {
       size: "A3",
       margin: 0,
     });
-    let qr_description = params.qr_description;
-    let company_logo_url = params.company_logo_url;
-    let safe_entry_url = params.safe_entry_url;
-    let qr_code_image = await QRCode.toDataURL(safe_entry_url, { 
+    let QR_DESCRIPTION = qr_description;
+    let SAFE_ENTRY_URL = safe_entry_url;
+    let qr_code_image = await QRCode.toDataURL(SAFE_ENTRY_URL, { 
         errorCorrectionLevel: 'H',
         quality: 1,
         margin: 1,
@@ -52,7 +61,7 @@ async function generatePDF(params) {
     doc.fontSize(25)
       .font('Helvetica-Bold')
       .fill('black')
-      .text(qr_description, 485, 340, {
+      .text(QR_DESCRIPTION, 485, 340, {
         width: 300,
         align: 'center',
         baseline: 'bottom'
@@ -72,8 +81,8 @@ async function generatePDF(params) {
     console.log("completed pdf doc")
 
     // Pipe its output somewhere, like to a file or HTTP response
-    doc.pipe(fs.createWriteStream('/tmp/' + slugify(qr_description) + '.pdf'));
-    console.log("saved pdf doc to: " + '/tmp/' + slugify(qr_description) + '.pdf')
+    doc.pipe(fs.createWriteStream('/tmp/' + slugify(QR_DESCRIPTION) + '.pdf'));
+    console.log("saved pdf doc to: " + '/tmp/' + slugify(QR_DESCRIPTION) + '.pdf')
 
   } catch (error) {
     console.log(error)
@@ -81,8 +90,4 @@ async function generatePDF(params) {
   }
 }
 
-generatePDF({
-  'qr_description': "NTUC Northpoint SE",
-  'company_logo_url': "https://s3-ap-southeast-1.amazonaws.com/www.fairprice.com.sg/fpol/media/images/wcm/corporate/Corporate_logo.png",
-  'safe_entry_url': "https://temperaturepass.ndi-api.gov.sg/login/PROD-S83CS0191L-NTUC-NORTHPOINT-SE"
-})
+generatePDF("NTUC Northpoint SE", "https://temperaturepass.ndi-api.gov.sg/login/PROD-S83CS0191L-NTUC-NORTHPOINT-SE")
